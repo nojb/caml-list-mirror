@@ -1,0 +1,73 @@
+#!/usr/bin/perl -w
+# Copyright (C) 2016-2018 all contributors <meta@public-inbox.org>
+# License: AGPL-3.0+ <https://www.gnu.org/licenses/agpl-3.0.txt>
+use strict;
+use warnings;
+use Email::MIME;
+$Email::MIME::ContentType::STRICT_PARAMS = 0; # user input is imperfect
+use PublicInbox::Git;
+use PublicInbox::Import;
+use File::Basename;
+my $usage = "usage: $0 CAML_LIST_DIR\n";
+chomp(my $git_dir = `git rev-parse --git-dir`);
+my $git = PublicInbox::Git->new($git_dir);
+my $dir = shift or die $usage;
+my $name = "caml-list";
+my $email = 'caml-list@inria.fr';
+#my $im = PublicInbox::Import->new($git, $name, $email);
+binmode STDIN;
+my $msg = '';
+#use PublicInbox::Filter::Vger;
+#my $vger = PublicInbox::Filter::Vger->new;
+
+# sub do_add ($$) {
+# 	my ($im, $msg) = @_;
+# 	$$msg =~ s/(\r?\n)+\z/$1/s;
+# 	$msg = Email::MIME->new($$msg);
+# 	$msg = $vger->scrub($msg);
+# 	$im->add($msg) or
+# 		warn "duplicate: ",
+# 			$msg->header_obj->header_raw('Message-ID'), "\n";
+# }
+
+sub import_dir {
+    my($dir) = @_;
+    my $im = PublicInbox::Import->new($git, $name, $email);
+    print "$dir (press key to continue)";
+    <STDIN>;
+    my @files = glob("$dir/*");
+    @files = sort { basename($a) <=> basename($b) } @files;
+    foreach my $file (@files) {
+        my $base = basename($file);
+        print "$base ";
+        my $contents = `cat $file`;
+        #print "$contents";
+        $msg = Email::MIME->new($contents);
+        $im->add($msg) or print "(duplicate) ";
+    };
+    print "\n";
+    $im->done;
+}
+
+foreach my $dir1 ( glob("$dir/caml-list_*-*") ) {
+    import_dir($dir1)
+}
+
+# asctime: From example@example.com Fri Jun 23 02:56:55 2000
+# my $from_strict = qr/^From \S+ \S+ \S+ +\S+ [^:]+:[^:]+:[^:]+ [^:]+/;
+# my $prev = undef;
+# while (defined(my $l = <STDIN>)) {
+# 	if ($l =~ /$from_strict/o) {
+# 		if (!defined($prev) || $prev =~ /^\r?$/) {
+# 			do_add($im, \$msg) if $msg;
+# 			$msg = '';
+# 			$prev = $l;
+# 			next;
+# 		}
+# 		warn "W[$.] $l\n";
+# 	}
+# 	$prev = $l;
+# 	$msg .= $l;
+# }
+# do_add($im, \$msg) if $msg;
+# $im->done;
