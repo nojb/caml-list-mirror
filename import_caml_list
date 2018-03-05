@@ -12,23 +12,32 @@ my $usage = "usage: $0 CAML_LIST_DIR\n";
 chomp(my $git_dir = `git rev-parse --git-dir`);
 my $git = PublicInbox::Git->new($git_dir);
 my $dir = shift or die $usage;
-my $name = "caml-list";
+my $name = 'caml-list';
 my $email = 'caml-list@inria.fr';
-#my $im = PublicInbox::Import->new($git, $name, $email);
 binmode STDIN;
 my $msg = '';
-#use PublicInbox::Filter::Vger;
-#my $vger = PublicInbox::Filter::Vger->new;
 
-# sub do_add ($$) {
-# 	my ($im, $msg) = @_;
-# 	$$msg =~ s/(\r?\n)+\z/$1/s;
-# 	$msg = Email::MIME->new($$msg);
-# 	$msg = $vger->scrub($msg);
-# 	$im->add($msg) or
-# 		warn "duplicate: ",
-# 			$msg->header_obj->header_raw('Message-ID'), "\n";
-# }
+# used to hash the relevant portions of a message when there are conflicts
+sub _hash_mime2 {
+	my ($mime) = @_;
+	require Digest::SHA;
+	my $dig = Digest::SHA->new('SHA-1');
+	$dig->add($mime->header_obj->header_raw('Subject'));
+	$dig->add($mime->body_raw);
+	$dig->hexdigest;
+}
+
+sub _force_mid {
+	my ($mime) = @_;
+	# probably a bad idea, but we inject a Message-Id if
+	# one is missing, here..
+	my $mid = $mime->header_obj->header_raw('Message-Id');
+	if (!defined $mid || $mid =~ /\A\s*\z/) {
+		$mid = '<' . _hash_mime2($mime) . '@generated>';
+                print "\nGENERATING mid = $mid\n";
+		$mime->header_set('Message-Id', $mid);
+	}
+}
 
 sub import_dir {
     my($dir) = @_;
@@ -43,6 +52,7 @@ sub import_dir {
         my $contents = `cat $file`;
         #print "$contents";
         $msg = Email::MIME->new($contents);
+        _force_mid($msg);
         $im->add($msg) or print "(duplicate) ";
     };
     print "\n";
@@ -70,4 +80,3 @@ foreach my $dir1 ( glob("$dir/caml-list_*-*") ) {
 # 	$msg .= $l;
 # }
 # do_add($im, \$msg) if $msg;
-# $im->done;
