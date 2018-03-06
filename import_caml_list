@@ -18,7 +18,7 @@ my $email = 'caml-list@inria.fr';
 my $caml_list_archive = 'caml-list';
 my $caml_list_maildir = 'caml-list-maildir/caml-list';
 binmode STDIN;
-my $dry_run = 1;
+my $dry_run = 0;
 my $msg = '';
 
 # used to hash the relevant portions of a message when there are conflicts
@@ -38,7 +38,7 @@ sub _force_mid {
 	my $mid = $mime->header_obj->header_raw('Message-Id');
 	if (!defined $mid || $mid =~ /\A\s*\z/) {
 		$mid = '<' . _hash_mime2($mime) . '@generated>';
-                print "\nGENERATING mid = $mid\n";
+                print " (generating mid = $mid)";
 		$mime->header_set('Message-Id', $mid);
 	}
 }
@@ -46,13 +46,14 @@ sub _force_mid {
 sub import_file {
     my ($im, $file) = @_;
     my $base = basename($file);
-    print "$base ";
+    print "$base";
     my $contents = `cat $file`;
     #print "$contents";
     $msg = Email::MIME->new($contents);
     _force_mid($msg);
     return unless $im;
-    $im->add($msg) or print "(duplicate) ";
+    $im->add($msg) or print " (duplicate)";
+    print "\n";
 }
 
 sub import_dir {
