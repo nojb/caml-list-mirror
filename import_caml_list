@@ -8,13 +8,17 @@ $Email::MIME::ContentType::STRICT_PARAMS = 0; # user input is imperfect
 use PublicInbox::Git;
 use PublicInbox::Import;
 use File::Basename;
-my $usage = "usage: $0 CAML_LIST_DIR\n";
-chomp(my $git_dir = `git rev-parse --git-dir`);
+my $usage = "usage: $0\n";
+#chomp(my $git_dir = `git rev-parse --git-dir`);
+my $git_dir = 'caml-list.git';
 my $git = PublicInbox::Git->new($git_dir);
-my $dir = shift or die $usage;
+#my $dir = shift or die $usage;
 my $name = 'caml-list';
 my $email = 'caml-list@inria.fr';
+my $caml_list_archive = 'caml-list';
+my $caml_list_maildir = 'caml-list-maildir/caml-list';
 binmode STDIN;
+my $dry_run = 1;
 my $msg = '';
 
 # used to hash the relevant portions of a message when there are conflicts
@@ -39,29 +43,38 @@ sub _force_mid {
 	}
 }
 
+sub import_file {
+    my ($im, $file) = @_;
+    my $base = basename($file);
+    print "$base ";
+    my $contents = `cat $file`;
+    #print "$contents";
+    $msg = Email::MIME->new($contents);
+    _force_mid($msg);
+    return unless $im;
+    $im->add($msg) or print "(duplicate) ";
+}
+
 sub import_dir {
     my($dir) = @_;
-    my $im = PublicInbox::Import->new($git, $name, $email);
-    print "$dir (press key to continue)";
-    <STDIN>;
+    my $im = $dry_run ? undef : PublicInbox::Import->new($git, $name, $email);
+    print "$dir\n";
+    #<STDIN>;
     my @files = glob("$dir/*");
     @files = sort { basename($a) <=> basename($b) } @files;
     foreach my $file (@files) {
-        my $base = basename($file);
-        print "$base ";
-        my $contents = `cat $file`;
-        #print "$contents";
-        $msg = Email::MIME->new($contents);
-        _force_mid($msg);
-        $im->add($msg) or print "(duplicate) ";
+        import_file($im, $file);
     };
     print "\n";
-    $im->done;
+    $im->done if $im;
 }
 
-foreach my $dir1 ( glob("$dir/caml-list_*-*") ) {
+foreach my $dir1 ( glob("$caml_list_archive/caml-list_*-*") ) {
     import_dir($dir1)
 }
+
+import_dir("$caml_list_maildir/cur");
+import_dir("$caml_list_maildir/new");
 
 # asctime: From example@example.com Fri Jun 23 02:56:55 2000
 # my $from_strict = qr/^From \S+ \S+ \S+ +\S+ [^:]+:[^:]+:[^:]+ [^:]+/;
