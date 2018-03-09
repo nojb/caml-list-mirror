@@ -1,0 +1,15 @@
+version: '2'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  public-inbox:
+    image: nojb/public-inbox-caml-list
+    volumes:
+      - /root/caml-list.git:/root/caml-list.git:rw
+    environment:
+      - VIRTUAL_HOST=inbox.ocaml.org
+      - VIRTUAL_PORT=8080
