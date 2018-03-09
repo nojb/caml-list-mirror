@@ -21,6 +21,5 @@ RUN cd /root/public-inbox && perl Makefile.PL && make && make install
 COPY config /root/.public-inbox/config
 COPY supervisord.conf /root/supervisord.conf
 CMD cd /root/caml-list.git && \
-    echo "caml-list - the Caml users' mailing list" > description && \
     /usr/bin/supervisord -c /root/supervisord.conf -n
 EXPOSE 8080
