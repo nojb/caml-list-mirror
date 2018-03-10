@@ -19,7 +19,4 @@ RUN apt-get -y install \
 RUN git clone git://80x24.org/public-inbox /root/public-inbox
 RUN cd /root/public-inbox && perl Makefile.PL && make && make install
 COPY config /root/.public-inbox/config
-COPY supervisord.conf /root/supervisord.conf
-CMD cd /root/caml-list.git && \
-    /usr/bin/supervisord -c /root/supervisord.conf -n
 EXPOSE 8080
