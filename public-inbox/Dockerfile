@@ -19,4 +19,3 @@ RUN apt-get -y install \
 RUN git clone git://80x24.org/public-inbox /root/public-inbox
 RUN cd /root/public-inbox && perl Makefile.PL && make && make install
 COPY config /root/.public-inbox/config
-EXPOSE 8080

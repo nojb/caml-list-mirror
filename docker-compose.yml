@@ -25,6 +25,8 @@ services:
 
   public-inbox-httpd:
     build: public-inbox
+    expose:
+      - "8080"
     ports:
       - "8080:8080"
     volumes:
