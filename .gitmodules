@@ -1,3 +1,3 @@
 [submodule "public-inbox"]
-	path = public-inbox
+	path = migration/public-inbox
 	url = git@github.com:nojb/public-inbox
