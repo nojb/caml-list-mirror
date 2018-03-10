@@ -12,5 +12,5 @@ RUN postconf -e "home_mailbox = Maildir/" && \
     postconf -e "inet_interfaces = all" && \
     postconf -e "virtual_alias_maps = hash:/etc/postfix/virtual"
 RUN ln -sf /dev/stdout /var/log/mail.log
-CMD service postfix start && rsyslogd -n
+CMD service postfix start && postmap /etc/postfix/virtual && rsyslogd -n
 EXPOSE 25
