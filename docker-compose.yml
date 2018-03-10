@@ -38,10 +38,24 @@ services:
       - LETSENCRYPT_EMAIL=n.oje.bar@gmail.com
     command: public-inbox-httpd
 
+  public-inbox-watch:
+    build: public-inbox
+    volumes:
+      - /root/Maildir/caml-list:/root/caml-list:ro
+      - /root/caml-list.git:/root/caml-list.git:rw
+    command: public-inbox-watch
+
+  public-inbox-index:
+    build: public-inbox
+    volumes:
+      - /root/caml-list.git:/root/caml-list.git
+    command: cd /root/caml-list.git && public-inbox-index
+
   postfix:
     build: postfix
     volumes:
-      - ./Maildir:/home/caml-list/Maildir:rw
+      - /root/Maildir/caml-list:/home/caml-list/Maildir:rw
+    hostname: inbox.ocaml.org
     ports:
       - "25:25"
 
