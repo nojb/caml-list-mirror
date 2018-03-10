@@ -38,6 +38,13 @@ services:
       - LETSENCRYPT_EMAIL=n.oje.bar@gmail.com
     command: public-inbox-httpd
 
+  postfix:
+    build: postfix
+    volumes:
+      - ./Maildir:/home/caml-list/Maildir:rw
+    ports:
+      - "25:25"
+
 volumes:
   certs:
   vhost:
