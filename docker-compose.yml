@@ -49,7 +49,7 @@ services:
     build: public-inbox
     volumes:
       - /root/caml-list.git:/root/caml-list.git
-    command: "cd /root/caml-list.git && public-inbox-index"
+    command: sh -c "cd /root/caml-list.git && public-inbox-index"
 
   postfix:
     build: postfix
