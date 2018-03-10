@@ -7,6 +7,7 @@ RUN echo "postfix postfix/main_mailer_type string Internet site" > preseed.txt &
     DEBIAN_FRONTEND=noninteractive apt-get -y install postfix
 RUN apt-get install -y mailutils rsyslog
 RUN useradd -m -s /bin/bash caml-list && \
+    mkdir /home/caml-list/Maildir && \
     chmod 777 /home/caml-list/Maildir
 RUN postconf -e "home_mailbox = Maildir/" && \
     postconf -e "mydestination = inbox.ocaml.org" && \
