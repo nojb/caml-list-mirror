@@ -2,7 +2,7 @@ FROM debian:8.5
 MAINTAINER Nicolás Ojeda Bär <n.oje.bar@gmail.com>
 RUN apt-get update
 RUN apt-get -y install \
-    git make perl supervisor \
+    git make perl \
     libtimedate-perl \
     libemail-mime-perl \
     libemail-mime-contenttype-perl \
