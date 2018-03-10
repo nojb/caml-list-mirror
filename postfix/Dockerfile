@@ -6,12 +6,11 @@ RUN echo "postfix postfix/main_mailer_type string Internet site" > preseed.txt &
     debconf-set-selections preseed.txt && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install postfix
 RUN apt-get install -y mailutils rsyslog
-RUN useradd -m -s /bin/bash caml-list && \
-    mkdir -p /home/caml-list/Maildir && \
-    chown caml-list /home/caml-list/Maildir
+ADD virtual /etc/postfix/virtual
 RUN postconf -e "home_mailbox = Maildir/" && \
     postconf -e "mydestination = inbox.ocaml.org" && \
-    postconf -e "inet_interfaces = all"
+    postconf -e "inet_interfaces = all" && \
+    postconf -e "virtual_alias_maps = hash:/etc/postfix/virtual"
 RUN ln -sf /dev/stdout /var/log/mail.log
 CMD service postfix start && rsyslogd -n
 EXPOSE 25

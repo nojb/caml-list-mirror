@@ -41,7 +41,7 @@ services:
   public-inbox-watch:
     build: public-inbox
     volumes:
-      - /root/Maildir/caml-list:/root/caml-list:ro
+      - /root/Maildir:/root/Maildir:ro
       - /root/caml-list.git:/root/caml-list.git:rw
     command: public-inbox-watch
 
@@ -54,7 +54,7 @@ services:
   postfix:
     build: postfix
     volumes:
-      - /root/Maildir/caml-list:/home/caml-list/Maildir:rw
+      - /root/Maildir:/root/Maildir:rw
     hostname: inbox.ocaml.org
     ports:
       - "25:25"
