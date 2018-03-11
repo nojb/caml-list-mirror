@@ -41,7 +41,7 @@ services:
   public-inbox-watch:
     build: public-inbox
     volumes:
-      - /root/Maildir:/root/Maildir:ro
+      - /root/Maildir:/root/Maildir
       - /root/caml-list.git:/root/caml-list.git:rw
     command: public-inbox-watch
 
