@@ -3,4 +3,4 @@
     address = caml-list@inria.fr
     url = https://inbox.ocaml.org/caml-list
     watch = maildir:/root/Maildir
-    watchheader = List-Id: <caml-list.inria.fr>
+    watchheader = List-Id:<caml-list.inria.fr>
