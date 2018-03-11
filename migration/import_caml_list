@@ -16,7 +16,7 @@ my $git = PublicInbox::Git->new($git_dir);
 my $name = 'caml-list';
 my $email = 'caml-list@inria.fr';
 my $caml_list_archive = 'caml-list';
-my $caml_list_maildir = 'caml-list-maildir/caml-list';
+#my $caml_list_maildir = 'caml-list-maildir/caml-list';
 binmode STDIN;
 my $dry_run = 0;
 my $msg = '';
@@ -41,6 +41,15 @@ sub _force_mid {
                 print " (generating mid = $mid)";
 		$mime->header_set('Message-Id', $mid);
 	}
+        my $ct = $mime->header_obj->header_raw('Content-Type');
+        if ($ct) {
+            (my $new_ct = $ct) =~ s/\Atext(;.*)?\z/text\/plain$1/i;
+            $new_ct =~ s/\A(.+?;\s*)(iso-8859-1)\z/$1charset=$2/i;
+            if ($new_ct && $new_ct ne $ct) {
+                print " (fixing content type: $ct -> $new_ct)";
+                $mime->header_set('Content-Type', $new_ct);
+            }
+        }
 }
 
 sub import_file {
@@ -74,8 +83,8 @@ foreach my $dir1 ( glob("$caml_list_archive/caml-list_*-*") ) {
     import_dir($dir1)
 }
 
-import_dir("$caml_list_maildir/cur");
-import_dir("$caml_list_maildir/new");
+# import_dir("$caml_list_maildir/cur");
+# import_dir("$caml_list_maildir/new");
 
 # asctime: From example@example.com Fri Jun 23 02:56:55 2000
 # my $from_strict = qr/^From \S+ \S+ \S+ +\S+ [^:]+:[^:]+:[^:]+ [^:]+/;
