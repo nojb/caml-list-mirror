@@ -18,6 +18,6 @@ RUN apt-get -y install \
     libnet-server-perl \
     libplack-middleware-deflater-perl \
     libplack-middleware-reverseproxy-perl
-RUN git clone git://80x24.org/public-inbox /root/public-inbox
+RUN git clone https://github.com/nojb/public-inbox /root/public-inbox
 RUN cd /root/public-inbox && perl Makefile.PL && make && make install
 COPY config /root/.public-inbox/config
