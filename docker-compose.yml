@@ -2,6 +2,7 @@ version: '2'
 services:
   nginx-proxy:
     image: jwilder/nginx-proxy
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -17,6 +18,7 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion
     depends_on:
       - nginx-proxy
+    restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - certs:/etc/nginx/certs:rw
@@ -25,6 +27,7 @@ services:
 
   public-inbox-httpd:
     build: public-inbox
+    restart: always
     expose:
       - "8080"
     ports:
@@ -40,6 +43,7 @@ services:
 
   public-inbox-watch:
     build: public-inbox
+    restart: always
     volumes:
       - /root/Maildir:/root/Maildir
       - /root/caml-list.git:/root/caml-list.git:rw
@@ -53,6 +57,7 @@ services:
 
   postfix:
     build: postfix
+    restart: always
     volumes:
       - /root/Maildir:/root/Maildir:rw
     hostname: inbox.ocaml.org
