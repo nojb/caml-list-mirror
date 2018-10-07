@@ -1,0 +1,3 @@
+location = / {
+  return 301 https://inbox.ocaml.org/caml-list;
+}

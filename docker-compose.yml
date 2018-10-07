@@ -8,6 +8,7 @@ services:
       - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /root/caml-list-mirror/nginx/vhost.d/inbox.ocaml.org_location:/etc/nginx/vhost.d/inbox.ocaml.org_location:ro
       - certs:/etc/nginx/certs
       - vhost:/etc/nginx/vhost.d
       - html:/usr/share/nginx/html
