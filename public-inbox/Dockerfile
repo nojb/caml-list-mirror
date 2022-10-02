@@ -1,8 +1,8 @@
-FROM debian:8.5
+FROM debian:bullseye-backports
 
 MAINTAINER Nicolás Ojeda Bär <n.oje.bar@gmail.com>
 
-RUN apt-get update &&
+RUN apt-get update && \
     apt-get -y install \
     libtimedate-perl \
     libplack-perl \
