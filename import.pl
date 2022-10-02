@@ -1,0 +1,82 @@
+#!/usr/bin/perl -w
+# Copyright (C) 2016-2018 all contributors <meta@public-inbox.org>
+# License: AGPL-3.0+ <https://www.gnu.org/licenses/agpl-3.0.txt>
+
+use strict;
+use warnings;
+use Email::MIME;
+$Email::MIME::ContentType::STRICT_PARAMS = 0; # user input is imperfect
+use PublicInbox::Git;
+use PublicInbox::Import;
+use File::Basename;
+
+my $usage = "usage: $0\n";
+#chomp(my $git_dir = `git rev-parse --git-dir`);
+my $git_dir = 'caml-list.git';
+my $git = PublicInbox::Git->new($git_dir);
+#my $dir = shift or die $usage;
+my $name = 'caml-list';
+my $email = 'caml-list@inria.fr';
+my $caml_list_archive = 'caml-list';
+my $msg = '';
+
+binmode STDIN;
+
+# used to hash the relevant portions of a message when there are conflicts
+sub _hash_mime2 {
+	my ($mime) = @_;
+	require Digest::SHA;
+	my $dig = Digest::SHA->new('SHA-1');
+	$dig->add($mime->header_obj->header_raw('Subject'));
+	$dig->add($mime->body_raw);
+	$dig->hexdigest;
+}
+
+sub _force_mid {
+	my ($mime) = @_;
+	# probably a bad idea, but we inject a Message-Id if
+	# one is missing, here..
+	my $mid = $mime->header_obj->header_raw('Message-Id');
+	if (!defined $mid || $mid =~ /\A\s*\z/) {
+		$mid = '<' . _hash_mime2($mime) . '@generated>';
+                print " (generating mid = $mid)";
+		$mime->header_set('Message-Id', $mid);
+	}
+        my $ct = $mime->header_obj->header_raw('Content-Type');
+        if ($ct) {
+            (my $new_ct = $ct) =~ s/\Atext(;.*)?\z/text\/plain$1/i;
+            $new_ct =~ s/\A(.+?;\s*)(iso-8859-1)\z/$1charset=$2/i;
+            if ($new_ct && $new_ct ne $ct) {
+                print " (fixing content type: $ct -> $new_ct)";
+                $mime->header_set('Content-Type', $new_ct);
+            }
+        }
+}
+
+sub import_file {
+    my ($im, $file) = @_;
+    my $base = basename($file);
+    print "$base\n";
+    my $contents = `cat $file`;
+    $msg = Email::MIME->new($contents);
+    #_force_mid($msg);
+    return unless $im;
+    $im->add($msg) or print " (duplicate)\n";
+}
+
+sub import_dir {
+    my($dir) = @_;
+    my $im = $dry_run ? undef : PublicInbox::Import->new($git, $name, $email);
+    print "$dir\n";
+    my @files = glob("$dir/*");
+    @files = sort { basename($a) <=> basename($b) } @files;
+    foreach my $file (@files) {
+        import_file($im, $file);
+    };
+    print "\n";
+    $im->done if $im;
+}
+
+foreach my $dir1 ( glob("$caml_list_archive/caml-list_*-*") ) {
+    import_dir($dir1)
+}
