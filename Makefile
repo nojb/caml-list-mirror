@@ -1,10 +1,7 @@
-# Import commands (to be executed once)
-
-init:
+import:
 	public-inbox-init caml-list caml-list.git https://inbox.ocaml.org/caml-list caml-list@inria.fr
-
-clone:
-	git clone https://github.com/nojb/caml-list-archive caml-list
+	perl import.pl
 
 import:
-	perl import.pl
+	if [ -d caml-list-archive ]; then git -C caml-list-archive pull; else git clone https://github.com/nojb/caml-list-archive; fi
+	cd public-inbox && docker build -t public-inbox . && docker run -v $(PWD):/root/work -it public-inbox make -C /root/work import

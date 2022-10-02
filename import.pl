@@ -17,7 +17,7 @@ my $git = PublicInbox::Git->new($git_dir);
 #my $dir = shift or die $usage;
 my $name = 'caml-list';
 my $email = 'caml-list@inria.fr';
-my $caml_list_archive = 'caml-list';
+my $caml_list_archive = 'caml-list-archive';
 my $msg = '';
 
 binmode STDIN;
