@@ -50,12 +50,6 @@ services:
       - /root/caml-list.git:/root/caml-list.git:rw
     command: public-inbox-watch
 
-  # public-inbox-index:
-  #   build: public-inbox
-  #   volumes:
-  #     - /root/caml-list.git:/root/caml-list.git
-  #   command: sh -c "cd /root/caml-list.git && public-inbox-index"
-
   postfix:
     build: postfix
     restart: always

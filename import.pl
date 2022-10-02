@@ -22,51 +22,18 @@ my $msg = '';
 
 binmode STDIN;
 
-# used to hash the relevant portions of a message when there are conflicts
-sub _hash_mime2 {
-	my ($mime) = @_;
-	require Digest::SHA;
-	my $dig = Digest::SHA->new('SHA-1');
-	$dig->add($mime->header_obj->header_raw('Subject'));
-	$dig->add($mime->body_raw);
-	$dig->hexdigest;
-}
-
-sub _force_mid {
-	my ($mime) = @_;
-	# probably a bad idea, but we inject a Message-Id if
-	# one is missing, here..
-	my $mid = $mime->header_obj->header_raw('Message-Id');
-	if (!defined $mid || $mid =~ /\A\s*\z/) {
-		$mid = '<' . _hash_mime2($mime) . '@generated>';
-                print " (generating mid = $mid)";
-		$mime->header_set('Message-Id', $mid);
-	}
-        my $ct = $mime->header_obj->header_raw('Content-Type');
-        if ($ct) {
-            (my $new_ct = $ct) =~ s/\Atext(;.*)?\z/text\/plain$1/i;
-            $new_ct =~ s/\A(.+?;\s*)(iso-8859-1)\z/$1charset=$2/i;
-            if ($new_ct && $new_ct ne $ct) {
-                print " (fixing content type: $ct -> $new_ct)";
-                $mime->header_set('Content-Type', $new_ct);
-            }
-        }
-}
-
 sub import_file {
     my ($im, $file) = @_;
     my $base = basename($file);
     print "$base\n";
     my $contents = `cat $file`;
     $msg = Email::MIME->new($contents);
-    #_force_mid($msg);
-    return unless $im;
     $im->add($msg) or print " (duplicate)\n";
 }
 
 sub import_dir {
-    my($dir) = @_;
-    my $im = $dry_run ? undef : PublicInbox::Import->new($git, $name, $email);
+    my ($dir) = @_;
+    my $im = PublicInbox::Import->new($git, $name, $email);
     print "$dir\n";
     my @files = glob("$dir/*");
     @files = sort { basename($a) <=> basename($b) } @files;
