@@ -6,10 +6,6 @@ RUN apt-get update && \
     apt-get -y install \
     make \
     libtimedate-perl \
-    libplack-perl \
-    libsearch-xapian-perl \
-    libdbd-sqlite3-perl \
-    libinline-c-perl \
     libplack-middleware-reverseproxy-perl \
     liblinux-inotify2-perl \
     public-inbox
