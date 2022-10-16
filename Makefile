@@ -10,3 +10,6 @@ import:
 
 serve:
 	cd public-inbox && docker build -t public-inbox . && docker run --rm -p 8080:8080 -v $(PWD)/caml-list.git:/root/caml-list.git -it public-inbox public-inbox-httpd
+
+process:
+	cd public-inbox && docker build -t public-inbox . && docker run --rm -v $(PWD)/caml-list.git:/root/caml-list.git -i public-inbox public-inbox-mda --no-precheck
