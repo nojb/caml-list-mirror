@@ -1,31 +1,5 @@
 version: '2'
 services:
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /root/caml-list-mirror/nginx/vhost.d/inbox.ocaml.org_location:/etc/nginx/vhost.d/inbox.ocaml.org_location:ro
-      - certs:/etc/nginx/certs
-      - vhost:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html
-    labels:
-      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
-
-  letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    depends_on:
-      - nginx-proxy
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - certs:/etc/nginx/certs:rw
-      - vhost:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html
-
   public-inbox-httpd:
     build: public-inbox
     restart: always
@@ -34,32 +8,16 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /root/caml-list.git:/root/caml-list.git:rw
-    environment:
-      - VIRTUAL_HOST=inbox.ocaml.org
-      - VIRTUAL_PORT=8080
-      - LETSENCRYPT_HOST=inbox.ocaml.org
-      - LETSENCRYPT_EMAIL=n.oje.bar@gmail.com
+      - ./caml-list.git:/root/caml-list.git:ro
     command: public-inbox-httpd
 
-  public-inbox-watch:
+  public-inbox-mda:
     build: public-inbox
     restart: always
-    volumes:
-      - /root/Maildir:/root/Maildir
-      - /root/caml-list.git:/root/caml-list.git:rw
-    command: public-inbox-watch
-
-  postfix:
-    build: postfix
-    restart: always
-    volumes:
-      - /root/Maildir:/root/Maildir:rw
-    hostname: inbox.ocaml.org
+    expose:
+      - 25
     ports:
       - "25:25"
-
-volumes:
-  certs:
-  vhost:
-  html:
+    volumes:
+      - ./caml-list.git:/root/caml-list.git:rw
+    command: postfix start-fg
