@@ -11,10 +11,8 @@ use PublicInbox::Import;
 use File::Basename;
 
 my $usage = "usage: $0\n";
-#chomp(my $git_dir = `git rev-parse --git-dir`);
 my $git_dir = 'caml-list.git';
 my $git = PublicInbox::Git->new($git_dir);
-#my $dir = shift or die $usage;
 my $name = 'caml-list';
 my $email = 'caml-list@inria.fr';
 my $caml_list_archive = 'caml-list-archive';
@@ -24,11 +22,14 @@ binmode STDIN;
 
 sub import_file {
     my ($im, $file) = @_;
-    my $base = basename($file);
-    print "$base\n";
+    print "$file\n";
     my $contents = `cat $file`;
     $msg = Email::MIME->new($contents);
-    $im->add($msg) or print " (duplicate)\n";
+    if ($msg->header_raw("Date")) {
+        $im->add($msg) or print "$file (duplicate)\n";
+    } else {
+        print "$file (no date)\n";
+    }
 }
 
 sub import_dir {
@@ -40,10 +41,9 @@ sub import_dir {
     foreach my $file (@files) {
         import_file($im, $file);
     };
-    print "\n";
     $im->done if $im;
 }
 
-foreach my $dir1 ( glob("$caml_list_archive/caml-list_*-*") ) {
-    import_dir($dir1)
+foreach my $dir ( glob("$caml_list_archive/caml-list_*-*") ) {
+    import_dir($dir)
 }

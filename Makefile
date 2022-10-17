@@ -13,3 +13,11 @@ serve:
 
 process:
 	cd public-inbox && docker build -t public-inbox . && docker run --rm -v $(PWD)/caml-list.git:/root/caml-list.git -i public-inbox public-inbox-mda --no-precheck
+
+deploy:
+	if ! [ -d caml-list.git ]; then \
+	  git clone -b master --bare https://github.com/nojb/caml-list.git; \
+	else \
+	  git -C caml-list.git fetch; \
+	fi
+	docker-compose up
